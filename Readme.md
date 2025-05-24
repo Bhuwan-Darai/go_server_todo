@@ -68,6 +68,6 @@ go run main.go
 
 ### Note :
 
-- Server runs on: http://localhost:4000
+- Server runs on: http://localhost:3000
 
-- GraphQL Playground: http://localhost:4000/graphql
+- GraphQL Playground: http://localhost:3000/graphql
