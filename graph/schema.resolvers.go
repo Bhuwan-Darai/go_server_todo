@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"github.com/bhuwan-darai/crud/graph/model"
 	"github.com/bhuwan-darai/crud/prisma/db"
 )
@@ -37,22 +38,133 @@ func (r *mutationResolver) CreateUser(ctx context.Context, name string, email st
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, name *string, email *string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: UpdateUser - updateUser"))
+	// Convert string ID to int
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %v", err)
+	}
+
+	// Build update parameters
+	updateParams := []db.UserSetParam{}
+
+	if name != nil {
+		updateParams = append(updateParams, db.User.Name.Set(*name))
+	}
+
+	if email != nil {
+		updateParams = append(updateParams, db.User.Email.Set(*email))
+	}
+
+	// If no fields to update, return error
+	if len(updateParams) == 0 {
+		return nil, fmt.Errorf("no fields provided for update")
+	}
+
+	// Update the user
+	user, err := r.DB.User.FindUnique(
+		db.User.ID.Equals(userID),
+	).Update(updateParams...).Exec(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Record to update not found") {
+			return nil, fmt.Errorf("user not found")
+		}
+		if strings.Contains(err.Error(), "Unique constraint failed") {
+			return nil, fmt.Errorf("email already exists")
+		}
+		return nil, fmt.Errorf("failed to update user: %v", err)
+	}
+
+	return &model.User{
+		ID:        strconv.Itoa(user.ID),
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt.String(),
+	}, nil
 }
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: DeleteUser - deleteUser"))
+	// Convert string ID to int
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %v", err)
+	}
+
+	// First, get the user to return it after deletion
+	user, err := r.DB.User.FindUnique(
+		db.User.ID.Equals(userID),
+	).Exec(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "No User found") {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to find user: %v", err)
+	}
+
+	// Delete the user
+	_, err = r.DB.User.FindUnique(
+		db.User.ID.Equals(userID),
+	).Delete().Exec(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete user: %v", err)
+	}
+
+	return &model.User{
+		ID:        strconv.Itoa(user.ID),
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt.String(),
+	}, nil
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	users, err := r.DB.User.FindMany().Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch users: %v", err)
+	}
+
+	var result []*model.User
+	for _, user := range users {
+		result = append(result, &model.User{
+			ID:        strconv.Itoa(user.ID),
+			Name:      user.Name,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt.String(),
+		})
+	}
+
+	return result, nil
 }
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	// Convert string ID to int
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %v", err)
+	}
+
+	user, err := r.DB.User.FindUnique(
+		db.User.ID.Equals(userID),
+	).Exec(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "No User found") {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to fetch user: %v", err)
+	}
+
+	return &model.User{
+		ID:        strconv.Itoa(user.ID),
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt.String(),
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.
