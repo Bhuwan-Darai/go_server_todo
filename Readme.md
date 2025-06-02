@@ -14,7 +14,7 @@ A full-featured GraphQL server built with **Go Fiber**, **gqlgen**, **Prisma**, 
 
 ## 📁 Project Structure
 
-![project structure](public/go%project%structure.png)
+![project structure](public/project_structure.png)
 
 ---
 
