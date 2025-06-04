@@ -1,3 +1,5 @@
+scalar JSON
+
 type User {
   id: ID!
   name: String!
@@ -5,13 +7,47 @@ type User {
   createdAt: String!
 }
 
+type Task {
+  id: Int!
+  taskId: String!
+  title: String!
+  createdAt: String!
+}
+
+type Response {
+  success: Boolean!
+  message: String!
+  data: JSON # Use [JSON] for lists, or JSON for single-object responses
+}
+
+type ResponseWithData {
+  success: Boolean!
+  message: String!
+  data: [Task] # Use [JSON] for lists, or JSON for single-object responses
+}
+
+input TaskInput {
+  title: String!
+}
+
 type Query {
+  # User queries
   users: [User!]!
   user(id: ID!): User
+
+  # Task queries
+  tasks: [ResponseWithData!]!
+  task(taskId: String!): Task
 }
 
 type Mutation {
+  # User mutations
   createUser(name: String!, email: String!): User!
   updateUser(id: ID!, name: String, email: String): User!
   deleteUser(id: ID!): User!
+
+  # Task mutations (returning Response)
+  createTask(input: TaskInput!): Response!
+  updateTask(taskId: String!, input: TaskInput!): Response!
+  deleteTask(taskId: String!): Response!
 }

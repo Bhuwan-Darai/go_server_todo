@@ -8,6 +8,29 @@ type Mutation struct {
 type Query struct {
 }
 
+type Response struct {
+	Success bool           `json:"success"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data,omitempty"`
+}
+
+type ResponseWithData struct {
+	Success bool    `json:"success"`
+	Message string  `json:"message"`
+	Data    []*Task `json:"data,omitempty"`
+}
+
+type Task struct {
+	ID        int32  `json:"id"`
+	TaskID    string `json:"taskId"`
+	Title     string `json:"title"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type TaskInput struct {
+	Title string `json:"title"`
+}
+
 type User struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`

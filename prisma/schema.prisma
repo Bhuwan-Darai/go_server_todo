@@ -25,3 +25,10 @@ model User {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  taskId    String   @unique @default(uuid())
+  title     String
+  createdAt DateTime @default(now())
+}

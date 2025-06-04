@@ -9,6 +9,7 @@ import (
 	"github.com/bhuwan-darai/crud/graph"
 	"github.com/bhuwan-darai/crud/routes"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -22,8 +23,18 @@ func main() {
 
 	fmt.Println(DATABASE_URL)
 
+	// initialize fiber
 	app := fiber.New()
 
+	// CORS middleware
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:3000", // Vite dev server origin
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowCredentials: true,
+	}))
+
+	// Connect to DB
 	db := config.ConnectDB()
 	defer db.Prisma.Disconnect()
 
@@ -35,9 +46,11 @@ func main() {
 	// Set up GraphQL and Playground routes
 	routes.SetupRoutes(app, resolver)
 
-	app.Get("/", func(c *fiber.Ctx) error {
+	// Home route
+	app.Get("/home", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
 
-	app.Listen(":3000")
+	// Start server
+	app.Listen(":8000")
 }
