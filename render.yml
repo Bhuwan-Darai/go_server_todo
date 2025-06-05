@@ -10,10 +10,10 @@ services:
       buildCommand: |
         go mod tidy
         prisma generate
-        prisma migrate deploy
+        prisma migrate dev
+        go run github.com/steebchen/prisma-client-go migrate deploy
         go run github.com/99designs/gqlgen generate
-        go build -o bin/main main.go
-      startCommand: ./bin/main
+      startCommand: go run main.go
     envVars:
       - key: DATABASE_URL
         fromDatabase:
