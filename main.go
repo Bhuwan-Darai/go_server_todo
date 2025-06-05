@@ -20,8 +20,14 @@ func main() {
 	}
 
 	DATABASE_URL := os.Getenv("DATABASE_URL")
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8000"
+	}
 
 	fmt.Println(DATABASE_URL)
+	fmt.Printf("Server started on port %s\n", port)
 
 	// initialize fiber
 	app := fiber.New()
@@ -54,5 +60,5 @@ func main() {
 	fmt.Println(("Server started on port 8000"))
 
 	// Start server
-	app.Listen(":8000")
+	app.Listen(":" + port)
 }

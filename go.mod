@@ -28,4 +28,5 @@ require (
 	github.com/valyala/fasthttp v1.62.0 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.2.1 // indirect
 	golang.org/x/sys v0.33.0 // indirect
+
 )
