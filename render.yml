@@ -12,7 +12,8 @@ services:
         prisma generate
         prisma migrate deploy
         go run github.com/99designs/gqlgen generate
-      startCommand: go run main.go
+        go build -o bin/main main.go
+      startCommand: ./bin/main
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -20,6 +21,12 @@ services:
           property: connectionString
       - key: PORT
         value: 10000
+      - key: CORS_ORIGINS
+        value: https://your-frontend.onrender.com # Update with your frontend URL
+      - key: DIRECT_URL
+        fromDatabase:
+          name: go-crud-app
+          property: connectionString # Same as DATABASE_URL unless specified otherwise
 databases:
   - name: go-crud-app
     plan: free
