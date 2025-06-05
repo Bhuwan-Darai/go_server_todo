@@ -197,28 +197,38 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 }
 
 // Tasks is the resolver for the tasks field.
-func (r *queryResolver) Tasks(ctx context.Context) ([]*model.ResponseWithData, error) {
-	tasks, err := r.DB.Task.FindMany(db.Task.CreatedAt.Order(db.DESC)).Exec(ctx)
+func (r *queryResolver) Tasks(ctx context.Context) (*model.ResponseWithData, error) {
+	tasks, err := r.DB.Task.FindMany().OrderBy(db.Task.CreatedAt.Order(db.DESC)).Exec(ctx)
+
+	fmt.Println("tasks", tasks)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch tasks: %v", err)
+		return &model.ResponseWithData{
+			Success: false,
+			Message: "Failed to fetch tasks",
+		}, err
 	}
 
 	var result []*model.Task
 
 	for _, task := range tasks {
 		result = append(result, &model.Task{
+			ID:     int32(task.ID),
 			TaskID: task.TaskID,
 			Title:  task.Title,
 		})
 	}
 
-	return []*model.ResponseWithData{
-		{
-			Success: true,
-			Message: "Tasks fetched successfully",
-			Data:    result,
-		},
-	}, nil
+	response := &model.ResponseWithData{
+		Success: true,
+		Message: "Tasks fetched successfully",
+		Data:    result,
+	}
+
+	// Log the response before returning
+	fmt.Println("response", response)
+
+	return response, nil
 }
 
 // Task is the resolver for the task field.

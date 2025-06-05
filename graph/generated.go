@@ -107,7 +107,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
 	User(ctx context.Context, id string) (*model.User, error)
-	Tasks(ctx context.Context) ([]*model.ResponseWithData, error)
+	Tasks(ctx context.Context) (*model.ResponseWithData, error)
 	Task(ctx context.Context, taskID string) (*model.Task, error)
 }
 
@@ -1442,9 +1442,9 @@ func (ec *executionContext) _Query_tasks(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.ResponseWithData)
+	res := resTmp.(*model.ResponseWithData)
 	fc.Result = res
-	return ec.marshalNResponseWithData2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithDataᚄ(ctx, field.Selections, res)
+	return ec.marshalNResponseWithData2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_tasks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2130,14 +2130,11 @@ func (ec *executionContext) _Task_createdAt(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Task_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4714,9 +4711,6 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "createdAt":
 			out.Values[i] = ec._Task_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5243,48 +5237,8 @@ func (ec *executionContext) marshalNResponse2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋ
 	return ec._Response(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNResponseWithData2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithDataᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ResponseWithData) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNResponseWithData2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+func (ec *executionContext) marshalNResponseWithData2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx context.Context, sel ast.SelectionSet, v model.ResponseWithData) graphql.Marshaler {
+	return ec._ResponseWithData(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNResponseWithData2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx context.Context, sel ast.SelectionSet, v *model.ResponseWithData) graphql.Marshaler {

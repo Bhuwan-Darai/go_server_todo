@@ -51,6 +51,8 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
+	fmt.Println(("Server started on port 8000"))
+
 	// Start server
 	app.Listen(":8000")
 }

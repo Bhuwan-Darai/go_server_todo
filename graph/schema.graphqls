@@ -11,7 +11,7 @@ type Task {
   id: Int!
   taskId: String!
   title: String!
-  createdAt: String!
+  createdAt: String
 }
 
 type Response {
@@ -36,7 +36,7 @@ type Query {
   user(id: ID!): User
 
   # Task queries
-  tasks: [ResponseWithData!]!
+  tasks: ResponseWithData!
   task(taskId: String!): Task
 }
 

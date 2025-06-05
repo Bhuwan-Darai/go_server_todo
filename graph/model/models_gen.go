@@ -21,10 +21,10 @@ type ResponseWithData struct {
 }
 
 type Task struct {
-	ID        int32  `json:"id"`
-	TaskID    string `json:"taskId"`
-	Title     string `json:"title"`
-	CreatedAt string `json:"createdAt"`
+	ID        int32   `json:"id"`
+	TaskID    string  `json:"taskId"`
+	Title     string  `json:"title"`
+	CreatedAt *string `json:"createdAt,omitempty"`
 }
 
 type TaskInput struct {
