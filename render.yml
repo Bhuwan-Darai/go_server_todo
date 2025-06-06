@@ -1,17 +1,19 @@
 services:
   - type: web
     name: go-crud-app
-    env: go
+    env: go-crud-app
     runtime: image
+    git:
+      depth: false
     image:
-      name: node:20
+      name: golang:1.21-bullseye
       preBuildCommands:
+        - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        - apt-get update && apt-get install -y nodejs
         - npm install -g prisma
       buildCommand: |
         go mod tidy
-        prisma generate
-        prisma migrate dev
-        go run github.com/steebchen/prisma-client-go migrate deploy
+        prisma migrate deploy
         go run github.com/99designs/gqlgen generate
       startCommand: go run main.go
     envVars:
@@ -22,11 +24,11 @@ services:
       - key: PORT
         value: 10000
       - key: CORS_ORIGINS
-        value: https://your-frontend.onrender.com # Update with your frontend URL
+        value: https://your-actual-frontend.onrender.com
       - key: DIRECT_URL
         fromDatabase:
           name: go-crud-app
-          property: connectionString # Same as DATABASE_URL unless specified otherwise
+          property: connectionString
 databases:
   - name: go-crud-app
     plan: free
