@@ -24,7 +24,7 @@ services:
       - key: PORT
         value: 10000
       - key: CORS_ORIGINS
-        value: https://your-actual-frontend.onrender.com
+        value: https://go-server-todo-frontend.vercel.app/
       - key: DIRECT_URL
         fromDatabase:
           name: go-crud-app
