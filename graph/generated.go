@@ -8,6 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"goCrud/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -15,7 +16,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
-	"github.com/bhuwan-darai/crud/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -553,7 +553,7 @@ func (ec *executionContext) field_Mutation_createTask_argsInput(
 ) (model.TaskInput, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNTaskInput2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTaskInput(ctx, tmp)
+		return ec.unmarshalNTaskInput2goCrudᚋgraphᚋmodelᚐTaskInput(ctx, tmp)
 	}
 
 	var zeroVal model.TaskInput
@@ -681,7 +681,7 @@ func (ec *executionContext) field_Mutation_updateTask_argsInput(
 ) (model.TaskInput, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNTaskInput2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTaskInput(ctx, tmp)
+		return ec.unmarshalNTaskInput2goCrudᚋgraphᚋmodelᚐTaskInput(ctx, tmp)
 	}
 
 	var zeroVal model.TaskInput
@@ -944,7 +944,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1009,7 +1009,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1074,7 +1074,7 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1139,7 +1139,7 @@ func (ec *executionContext) _Mutation_createTask(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Response)
 	fc.Result = res
-	return ec.marshalNResponse2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalNResponse2ᚖgoCrudᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTask(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1202,7 +1202,7 @@ func (ec *executionContext) _Mutation_updateTask(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Response)
 	fc.Result = res
-	return ec.marshalNResponse2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalNResponse2ᚖgoCrudᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateTask(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1265,7 +1265,7 @@ func (ec *executionContext) _Mutation_deleteTask(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Response)
 	fc.Result = res
-	return ec.marshalNResponse2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalNResponse2ᚖgoCrudᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteTask(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1328,7 +1328,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgoCrudᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_users(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1379,7 +1379,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1444,7 +1444,7 @@ func (ec *executionContext) _Query_tasks(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.ResponseWithData)
 	fc.Result = res
-	return ec.marshalNResponseWithData2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx, field.Selections, res)
+	return ec.marshalNResponseWithData2ᚖgoCrudᚋgraphᚋmodelᚐResponseWithData(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_tasks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1493,7 +1493,7 @@ func (ec *executionContext) _Query_task(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.Task)
 	fc.Result = res
-	return ec.marshalOTask2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTask(ctx, field.Selections, res)
+	return ec.marshalOTask2ᚖgoCrudᚋgraphᚋmodelᚐTask(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_task(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1951,7 +1951,7 @@ func (ec *executionContext) _ResponseWithData_data(ctx context.Context, field gr
 	}
 	res := resTmp.([]*model.Task)
 	fc.Result = res
-	return ec.marshalOTask2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTask(ctx, field.Selections, res)
+	return ec.marshalOTask2ᚕᚖgoCrudᚋgraphᚋmodelᚐTask(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ResponseWithData_data(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5223,11 +5223,11 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNResponse2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v model.Response) graphql.Marshaler {
+func (ec *executionContext) marshalNResponse2goCrudᚋgraphᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v model.Response) graphql.Marshaler {
 	return ec._Response(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNResponse2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v *model.Response) graphql.Marshaler {
+func (ec *executionContext) marshalNResponse2ᚖgoCrudᚋgraphᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v *model.Response) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5237,11 +5237,11 @@ func (ec *executionContext) marshalNResponse2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋ
 	return ec._Response(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNResponseWithData2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx context.Context, sel ast.SelectionSet, v model.ResponseWithData) graphql.Marshaler {
+func (ec *executionContext) marshalNResponseWithData2goCrudᚋgraphᚋmodelᚐResponseWithData(ctx context.Context, sel ast.SelectionSet, v model.ResponseWithData) graphql.Marshaler {
 	return ec._ResponseWithData(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNResponseWithData2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐResponseWithData(ctx context.Context, sel ast.SelectionSet, v *model.ResponseWithData) graphql.Marshaler {
+func (ec *executionContext) marshalNResponseWithData2ᚖgoCrudᚋgraphᚋmodelᚐResponseWithData(ctx context.Context, sel ast.SelectionSet, v *model.ResponseWithData) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5267,16 +5267,16 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNTaskInput2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTaskInput(ctx context.Context, v any) (model.TaskInput, error) {
+func (ec *executionContext) unmarshalNTaskInput2goCrudᚋgraphᚋmodelᚐTaskInput(ctx context.Context, v any) (model.TaskInput, error) {
 	res, err := ec.unmarshalInputTaskInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2goCrudᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgoCrudᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5300,7 +5300,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋc
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5320,7 +5320,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋc
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5853,7 +5853,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTask2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v []*model.Task) graphql.Marshaler {
+func (ec *executionContext) marshalOTask2ᚕᚖgoCrudᚋgraphᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v []*model.Task) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -5880,7 +5880,7 @@ func (ec *executionContext) marshalOTask2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋc
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOTask2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTask(ctx, sel, v[i])
+			ret[i] = ec.marshalOTask2ᚖgoCrudᚋgraphᚋmodelᚐTask(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5894,14 +5894,14 @@ func (ec *executionContext) marshalOTask2ᚕᚖgithubᚗcomᚋbhuwanᚑdaraiᚋc
 	return ret
 }
 
-func (ec *executionContext) marshalOTask2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v *model.Task) graphql.Marshaler {
+func (ec *executionContext) marshalOTask2ᚖgoCrudᚋgraphᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v *model.Task) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Task(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋbhuwanᚑdaraiᚋcrudᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgoCrudᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/bhuwan-darai/crud/config"
-	"github.com/bhuwan-darai/crud/graph"
-	"github.com/bhuwan-darai/crud/routes"
+	"goCrud/config"
+	"goCrud/graph"
+	"goCrud/routes"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"

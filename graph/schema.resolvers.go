@@ -7,12 +7,11 @@ package graph
 import (
 	"context"
 	"fmt"
+	"goCrud/graph/model"
+	db "goCrud/prisma/db/prisma-client"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/bhuwan-darai/crud/graph/model"
-	"github.com/bhuwan-darai/crud/prisma/db"
 )
 
 // CreateUser is the resolver for the createUser field.
