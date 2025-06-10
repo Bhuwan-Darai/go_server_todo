@@ -1,25 +1,18 @@
+# render.yaml
 services:
   - type: web
-    name: go-crud-app
-    env: go-crud-app
-    runtime: image
-    git:
-      depth: false
-    image:
-      name: golang:1.21-bullseye
-      preBuildCommands:
-        - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-        - apt-get update && apt-get install -y nodejs
-        - npm install -g prisma dotenv-cli
-        - npx prisma generate
-      buildCommand: |
-        go mod tidy
-      startCommand: dotenv -e .env -- go run main.go
-    envVars:
-      - key: PORT
-        value: 10000
-      - key: CORS_ORIGINS
-        value: https://go-server-todo-frontend.vercel.app/
-databases:
-  - name: go-crud-app
+    name: go-fiber-graphql
+    env: docker
     plan: free
+    region: singapore
+    dockerCommand: ./main
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres.rilzoeheapvcxmrxatfx:DHan15@@@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: false
+databases:
+  - name: postgres
+    ipAllowList: []
