@@ -5,7 +5,7 @@ import (
 
 	// prisma "github.com/bhuwan-darai/crud/prisma/db"
 	// "github.com/bhuwan-darai/crud/prisma/db"
-	db "goCrud/prisma/db/prisma-client"
+	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 )
 
 // DB holds the Prisma clientss

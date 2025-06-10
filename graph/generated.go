@@ -8,7 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"goCrud/graph/model"
+	"github.com/Bhuwan-Darai/goCrud/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"

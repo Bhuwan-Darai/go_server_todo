@@ -7,8 +7,8 @@ package graph
 import (
 	"context"
 	"fmt"
-	"goCrud/graph/model"
-	db "goCrud/prisma/db/prisma-client"
+	"github.com/Bhuwan-Darai/goCrud/graph/model"
+	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 	"strconv"
 	"strings"
 	"time"

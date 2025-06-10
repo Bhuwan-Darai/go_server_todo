@@ -3,7 +3,7 @@ package graph
 import (
 	"encoding/json"
 	"fmt"
-	db "goCrud/prisma/db/prisma-client"
+	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 )
 
 // This file will not be regenerated automatically.

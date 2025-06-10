@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"goCrud/config"
-	"goCrud/graph"
-	"goCrud/routes"
+	"github.com/Bhuwan-Darai/goCrud/config"
+	"github.com/Bhuwan-Darai/goCrud/graph"
+	"github.com/Bhuwan-Darai/goCrud/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
