@@ -24,7 +24,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {
-		port = "8000"
+		port = "10000"
 	}
 
 	fmt.Println(DATABASE_URL)
@@ -58,8 +58,11 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
-	fmt.Println(("Server started on port 8000"))
+	// Log server startup
+	log.Printf("Server starting on port %s", port)
 
 	// Start server
-	app.Listen(":" + port)
+	if err := app.Listen(fmt.Sprintf(":%s", port)); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
