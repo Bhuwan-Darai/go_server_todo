@@ -21,12 +21,12 @@ func main() {
 	}
 
 	DATABASE_URL := os.Getenv("DATABASE_URL")
-	// PORT := os.Getenv("PORT")
+	PORT := os.Getenv("PORT")
 	// fmt.Println(PORT)
 
-	// if PORT == "" {
-	// 	PORT = "10000"
-	// }
+	if PORT == "" {
+		PORT = "10000"
+	}
 
 	fmt.Println(DATABASE_URL)
 	// fmt.Printf("Server started on port %s\n", PORT)
@@ -62,8 +62,6 @@ func main() {
 	// Log server startup
 	// log.Printf("Server starting on port %s", PORT)
 
-	// Start server
-	if err := app.Listen(":10000"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	log.Printf("Starting server on port %s...\n", PORT)
+	log.Fatal(app.Listen("0.0.0.0:" + PORT))
 }
