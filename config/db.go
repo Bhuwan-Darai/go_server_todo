@@ -8,7 +8,7 @@ import (
 	db "goCrud/prisma/db/prisma-client"
 )
 
-// DB holds the Prisma client
+// DB holds the Prisma clientss
 
 func ConnectDB() *db.PrismaClient {
 	database := db.NewClient()

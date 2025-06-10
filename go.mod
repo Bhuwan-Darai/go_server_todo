@@ -1,4 +1,4 @@
-module goCrud
+module github.com/Bhuwan-Darai/goCrud
 
 go 1.24.0
 
