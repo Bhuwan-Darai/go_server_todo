@@ -21,14 +21,14 @@ func main() {
 	}
 
 	DATABASE_URL := os.Getenv("DATABASE_URL")
-	port := os.Getenv("PORT")
+	PORT := os.Getenv("PORT")
 
-	if port == "" {
-		port = "10000"
+	if PORT == "" {
+		PORT = "10000"
 	}
 
 	fmt.Println(DATABASE_URL)
-	fmt.Printf("Server started on port %s\n", port)
+	fmt.Printf("Server started on port %s\n", PORT)
 
 	// initialize fiber
 	app := fiber.New()
@@ -59,10 +59,10 @@ func main() {
 	})
 
 	// Log server startup
-	log.Printf("Server starting on port %s", port)
+	log.Printf("Server starting on port %s", PORT)
 
 	// Start server
-	if err := app.Listen(fmt.Sprintf(":%s", port)); err != nil {
+	if err := app.Listen(fmt.Sprintf(":%s", PORT)); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
