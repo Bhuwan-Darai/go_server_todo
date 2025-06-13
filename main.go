@@ -14,18 +14,23 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const defaultPort = "8000"
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	log.Println("PORT:", os.Getenv("PORT"))
+	log.Println("DATABASE_URL:", os.Getenv("DATABASE_URL"))
+	if os.Getenv("ENV") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Println("No .env file loaded (probably production):", err)
+		}
 	}
 
 	DATABASE_URL := os.Getenv("DATABASE_URL")
 	PORT := os.Getenv("PORT")
-	// fmt.Println(PORT)
+	fmt.Println(PORT)
 
 	if PORT == "" {
-		PORT = "10000"
+		PORT = defaultPort
 	}
 
 	fmt.Println(DATABASE_URL)
@@ -35,8 +40,9 @@ func main() {
 	app := fiber.New()
 
 	// CORS middleware
+	origins := "http://localhost:3000, https://go-server-todo-frontend.vercel.app/"
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000", // Vite dev server origin
+		AllowOrigins:     origins,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowCredentials: true,
@@ -63,5 +69,5 @@ func main() {
 	// log.Printf("Server starting on port %s", PORT)
 
 	log.Printf("Starting server on port %s...\n", PORT)
-	log.Fatal(app.Listen("0.0.0.0:" + PORT))
+	log.Fatal(app.Listen(":" + PORT))
 }
