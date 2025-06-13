@@ -3,25 +3,21 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-# Install required packages
+# Install needed packages
 RUN apk add --no-cache git gcc musl-dev
 
-# Copy go.mod and go.sum first
+# Copy Go mod files
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy the full source
+# Copy source
 COPY . .
 
-# Install gqlgen tool locally
+# Optional: gqlgen codegen (if used)
 RUN go install github.com/99designs/gqlgen@v0.17.74
+RUN /go/bin/gqlgen generate || echo "Skipping gqlgen generate (not needed or already done)"
 
-# Run gqlgen codegen (requires gqlgen.yml, schema, and Go types to exist)
-RUN /go/bin/gqlgen generate
-
-# Build binary (static)
+# Build binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Stage 2: Runtime
@@ -33,8 +29,8 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-# COPY --from=builder /app/.env ./  # optional
-
+# Expose the port your app will use
 EXPOSE 8000
 
+# Run the binary
 CMD ["./main"]
