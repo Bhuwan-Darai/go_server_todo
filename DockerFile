@@ -13,13 +13,13 @@ COPY prisma ./prisma
 # Install Prisma CLI
 RUN npm install -g prisma
 
-# Run Prisma operations in sequence
+# Run Prisma CLI generate and db push
 RUN npx prisma generate && \
-    echo "Prisma generate completed" && \
+    echo "Prisma CLI generate completed" && \
+    ls -la ./prisma && \
     npx prisma db push --accept-data-loss && \
     echo "Prisma db push completed" && \
-    ls -la ./prisma && \
-    echo "Prisma files after generate and push:"
+    ls -la ./prisma
 
 # Install Prisma Client Go
 RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/download/prisma-client-go.sh | sh
@@ -29,10 +29,13 @@ RUN go run github.com/steebchen/prisma-client-go generate && \
     ls -la ./prisma/db/prisma-client && \
     echo "Prisma Client Go generation completed"
 
-# Download query engine binary
+# Download query engine binary explicitly for musl (Alpine)
 RUN go run github.com/steebchen/prisma-client-go prefetch && \
     ls -la ./prisma && \
-    echo "Query engine prefetch completed"
+    mv ./prisma/query-engine-linux-musl ./prisma/db/prisma-client/query-engine || echo "Failed to move query engine" && \
+    chmod +x ./prisma/db/prisma-client/query-engine && \
+    ls -la ./prisma/db/prisma-client && \
+    echo "Query engine prefetch and move completed"
 
 # Stage 2: Build the Go binary
 FROM golang:1.21-alpine as builder
@@ -61,7 +64,7 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Add CA certificates and required dependencies
+# Add CA certificates and musl compatibility
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the compiled binary
@@ -70,19 +73,11 @@ COPY --from=builder /app/main .
 # Copy the Prisma schema and query engine
 COPY --from=prisma-builder /app/prisma ./prisma
 
-# Make sure the query engine is executable and in the right place
-RUN mkdir -p ./prisma/db/prisma-client && \
-    chmod +x ./prisma/query-engine-linux-musl && \
-    mv ./prisma/query-engine-linux-musl ./prisma/db/prisma-client/query-engine && \
-    chmod -R 755 ./prisma
-
 # Debug: Verify files in final image
 RUN ls -la ./prisma && \
     ls -la ./prisma/db/prisma-client && \
-    echo "Query engine location:" && \
     ls -la ./prisma/db/prisma-client/query-engine && \
-    echo "Prisma client location:" && \
-    ls -la ./prisma/db/prisma-client
+    chmod +x ./prisma/db/prisma-client/query-engine || echo "Query engine not found in final image"
 
 # Default port
 EXPOSE 8000
