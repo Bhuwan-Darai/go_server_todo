@@ -71,15 +71,16 @@ COPY --from=builder /app/main .
 COPY --from=prisma-builder /app/prisma ./prisma
 
 # Make sure the query engine is executable and in the right place
-RUN chmod +x ./prisma/query-engine-linux-musl && \
-    ln -sf ./prisma/query-engine-linux-musl ./prisma/query-engine && \
+RUN mkdir -p ./prisma/db/prisma-client && \
+    chmod +x ./prisma/query-engine-linux-musl && \
+    mv ./prisma/query-engine-linux-musl ./prisma/db/prisma-client/query-engine && \
     chmod -R 755 ./prisma
 
 # Debug: Verify files in final image
 RUN ls -la ./prisma && \
     ls -la ./prisma/db/prisma-client && \
     echo "Query engine location:" && \
-    ls -la ./prisma/query-engine* && \
+    ls -la ./prisma/db/prisma-client/query-engine && \
     echo "Prisma client location:" && \
     ls -la ./prisma/db/prisma-client
 

@@ -21,7 +21,7 @@ func ConnectDB() *db.PrismaClient {
 	// Verify Prisma client files exist
 	prismaDir := "./prisma"
 	clientDir := filepath.Join(prismaDir, "db/prisma-client")
-	queryEngine := filepath.Join(prismaDir, "query-engine")
+	queryEngine := filepath.Join(clientDir, "query-engine")
 
 	if _, err := os.Stat(clientDir); os.IsNotExist(err) {
 		log.Fatalf("❌ Prisma client directory not found at: %s", clientDir)
