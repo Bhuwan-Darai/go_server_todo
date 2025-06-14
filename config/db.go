@@ -16,8 +16,8 @@ func ConnectDB() *db.PrismaClient {
 		log.Fatal("❌ DATABASE_URL is not set in environment")
 	}
 
-	// Replace pgbouncer=true with sslmode=require to bypass PgBouncer
-	databaseURL = strings.Replace(databaseURL, "pgbouncer=true", "sslmode=require", 1)
+	// Remove pgbouncer=true parameter
+	databaseURL = strings.Replace(databaseURL, "pgbouncer=true", "", 1)
 
 	log.Printf("📦 Connecting to DB: %s", databaseURL)
 
