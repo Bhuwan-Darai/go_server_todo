@@ -34,8 +34,13 @@ func ConnectDB() *db.PrismaClient {
 		files, _ := filepath.Glob(filepath.Join(prismaDir, "**/query-engine*"))
 		if len(files) > 0 {
 			log.Printf("Found query engine files: %v", files)
+			// Try to use the first found query engine
+			if err := os.Symlink(files[0], queryEngine); err != nil {
+				log.Printf("Failed to create symlink: %v", err)
+			}
+		} else {
+			log.Fatalf("❌ Prisma query engine not found at: %s", queryEngine)
 		}
-		log.Fatalf("❌ Prisma query engine not found at: %s", queryEngine)
 	}
 
 	// Check query engine permissions

@@ -79,14 +79,10 @@ const schema = `// This is your Prisma schema file,
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-// generator client {
-//   provider = "prisma-client-js"
-//   output   = "../generated/prisma"
-// }
-
-generator db {
-  provider = "go run github.com/steebchen/prisma-client-go"
-  output   = "./db/prisma-client"
+generator client {
+  provider      = "go run github.com/steebchen/prisma-client-go"
+  output        = "./db/prisma-client"
+  binaryTargets = ["native", "linux-musl"]
 }
 
 datasource db {

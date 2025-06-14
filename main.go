@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/Bhuwan-Darai/goCrud/config"
 	"github.com/Bhuwan-Darai/goCrud/graph"
@@ -48,6 +49,9 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Debug: Check if Prisma engine files exist
+	checkPrismaEngine()
+
 	// Connect to DB
 	db := config.ConnectDB()
 	defer db.Prisma.Disconnect()
@@ -70,4 +74,34 @@ func main() {
 
 	log.Printf("Starting server on port %s...\n", PORT)
 	log.Fatal(app.Listen(":" + PORT))
+}
+
+func checkPrismaEngine() {
+	paths := []string{
+		"./prisma/client/engine/",
+		"./prisma/db/prisma-client/",
+		"./prisma/",
+	}
+
+	for _, path := range paths {
+		if _, err := os.Stat(path); err == nil {
+			fmt.Printf("✅ Found Prisma directory: %s\n", path)
+
+			// List files in the directory
+			err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if !info.IsDir() {
+					fmt.Printf("  - %s\n", filePath)
+				}
+				return nil
+			})
+			if err != nil {
+				fmt.Printf("❌ Error listing files in %s: %v\n", path, err)
+			}
+		} else {
+			fmt.Printf("❌ Prisma directory not found: %s\n", path)
+		}
+	}
 }
