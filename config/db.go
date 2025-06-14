@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
@@ -39,7 +40,21 @@ func ConnectDB() *db.PrismaClient {
 				log.Printf("Failed to create symlink: %v", err)
 			}
 		} else {
-			log.Fatalf("❌ Prisma query engine not found at: %s", queryEngine)
+			// Try to download the query engine
+			log.Printf("Attempting to download query engine...")
+			cmd := exec.Command("curl", "-L",
+				"https://binaries.prisma.sh/all_commits/5e91ac6b6a6fd5269b456d6063faed3d59a1700c/linux-musl/query-engine.gz",
+				"-o", queryEngine+".gz")
+			if err := cmd.Run(); err != nil {
+				log.Printf("Failed to download query engine: %v", err)
+			} else {
+				cmd = exec.Command("gunzip", queryEngine+".gz")
+				if err := cmd.Run(); err != nil {
+					log.Printf("Failed to extract query engine: %v", err)
+				} else {
+					os.Chmod(queryEngine, 0755)
+				}
+			}
 		}
 	}
 
