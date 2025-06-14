@@ -56,10 +56,10 @@ RUN go build -o main .
 # Stage 3: Final image
 FROM alpine:latest
 
-WORKDIR /root/
+WORKDIR /app
 
-# Add CA certificates
-RUN apk add --no-cache ca-certificates
+# Add CA certificates and required dependencies
+RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the compiled binary
 COPY --from=builder /app/main .
@@ -67,12 +67,21 @@ COPY --from=builder /app/main .
 # Copy the Prisma schema and query engine
 COPY --from=prisma-builder /app/prisma ./prisma
 
+# Make sure the query engine is executable and in the right place
+RUN chmod +x ./prisma/query-engine-linux-musl && \
+    ln -s ./prisma/query-engine-linux-musl ./prisma/query-engine
+
 # Debug: Verify files in final image
 RUN ls -la ./prisma && \
     ls -la ./prisma/db/prisma-client && \
-    chmod +x ./prisma/query-engine || echo "Query engine not found"
+    echo "Query engine location:" && \
+    ls -la ./prisma/query-engine*
 
 # Default port
 EXPOSE 8000
+
+# Set environment variables
+ENV PORT=8000
+ENV ENV=production
 
 CMD ["./main"]
