@@ -13,22 +13,24 @@ COPY prisma ./prisma
 # Install Prisma CLI
 RUN npm install -g prisma
 
-# Run Prisma generate + db push
+# Generate Prisma client and apply schema to DB
 RUN npx prisma generate --binary-target=linux-musl && \
     npx prisma db push --accept-data-loss
 
 # Install Prisma Client Go CLI
 RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/download/prisma-client-go.sh | sh
 
-# Generate Prisma Go client with explicit binary target
+# Generate Prisma Go client with binary target
 RUN GOOS=linux GOARCH=amd64 go run github.com/steebchen/prisma-client-go generate --binary-target=linux-musl
 
-# Download and setup query engine binary explicitly
+# Download and set up query engine binary explicitly
 RUN mkdir -p ./prisma/db/prisma-client && \
     curl -L https://binaries.prisma.sh/all_commits/5e91ac6b6a6fd5269b456d6063faed3d59a1700c/linux-musl/query-engine.gz -o ./prisma/db/prisma-client/query-engine.gz && \
     gunzip ./prisma/db/prisma-client/query-engine.gz && \
+    mv ./prisma/db/prisma-client/query-engine ./prisma/db/prisma-client/query-engine && \
     chmod +x ./prisma/db/prisma-client/query-engine && \
-    ls -la ./prisma/db/prisma-client/
+    ls -la ./prisma/db/prisma-client && \
+    [ -f ./prisma/db/prisma-client/query-engine ] || (echo "❌ query-engine not found after unzip!" && exit 1)
 
 # Stage 2: Build the Go application
 FROM golang:1.21-alpine as builder
@@ -38,18 +40,18 @@ WORKDIR /app
 # Install Git for Go modules
 RUN apk add --no-cache git
 
-# Download dependencies
+# Copy go dependencies and download them
 COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy source code
 COPY . .
 
-# Copy generated Prisma client and query engine from previous stage
+# Copy generated Prisma client and query engine from prisma-builder stage
 COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
 COPY --from=prisma-builder /app/prisma/schema.prisma ./prisma/schema.prisma
 
-# Build the Go binary
+# Build the Go application binary
 RUN GOOS=linux GOARCH=amd64 go build -o main .
 
 # Stage 3: Final runtime image
@@ -57,17 +59,17 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Required for Alpine compatibility
+# Install runtime dependencies
 RUN apk add --no-cache ca-certificates libc6-compat
 
-# Copy built binary
+# Copy built Go binary
 COPY --from=builder /app/main .
 
-# Copy generated Prisma client and query engine
+# Copy Prisma client and query engine
 COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
 COPY --from=prisma-builder /app/prisma/schema.prisma ./prisma/schema.prisma
 
-# Set up proper permissions and verify query engine
+# Ensure query engine is executable and exists
 RUN chmod +x ./prisma/db/prisma-client/query-engine && \
     ls -la ./prisma/db/prisma-client/ && \
     if [ -f ./prisma/db/prisma-client/query-engine ]; then \
@@ -77,9 +79,10 @@ RUN chmod +x ./prisma/db/prisma-client/query-engine && \
         exit 1; \
     fi
 
-# Expose port and start app
+# Set environment and expose port
 EXPOSE 8000
 ENV PORT=8000
 ENV ENV=production
 
+# Run the application
 CMD ["./main"]
