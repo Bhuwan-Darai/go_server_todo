@@ -2,18 +2,25 @@ package config
 
 import (
 	"log"
+	"os"
 
-	// prisma "github.com/bhuwan-darai/crud/prisma/db"
-	// "github.com/bhuwan-darai/crud/prisma/db"
 	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 )
 
-// DB holds the Prisma clientss
-
 func ConnectDB() *db.PrismaClient {
 	database := db.NewClient()
-	if err := database.Prisma.Connect(); err != nil {
-		log.Fatalf("Error connecting database :%v", err)
+	databaseURL := os.Getenv("DATABASE_URL")
+
+	if databaseURL == "" {
+		log.Fatal("❌ DATABASE_URL is not set in environment")
 	}
+
+	log.Printf("📦 Connecting to DB: %s", databaseURL)
+
+	if err := database.Prisma.Connect(); err != nil {
+		log.Fatalf("❌ Error connecting to database: %v", err)
+	}
+
+	log.Println("✅ Successfully connected to database")
 	return database
 }
