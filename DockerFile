@@ -1,7 +1,7 @@
 FROM golang:1.22-alpine
 
 # Install dependencies
-RUN apk add --no-cache git
+RUN apk add --no-cache git gcc musl-dev
 
 # Set working directory
 WORKDIR /app
@@ -11,15 +11,28 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
+# Install Prisma CLI and prisma-client-go
+RUN go install github.com/steebchen/prisma-client-go@latest
+
+# Copy Prisma schema and generate client
+COPY prisma ./prisma
+RUN go run github.com/steebchen/prisma-client-go generate
+
+# Verify Prisma client generation
+RUN ls -la prisma/db/prisma-client || (echo "Prisma client generation failed" && exit 1)
+
 # Copy rest of the app
 COPY . .
 
-# Run Prisma generate inside Docker
-RUN go run github.com/steebchen/prisma-client-go generate
-
 # Build Go binary
-RUN go build -o app main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o app .
 
 # Expose port and run app
 EXPOSE 8000
+
+# Set environment variables
+ENV PORT=8000
+ENV ENV=production
+
+# Run the binary
 CMD ["./app"]
