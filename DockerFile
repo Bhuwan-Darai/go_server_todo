@@ -31,13 +31,12 @@ COPY --from=builder /app/main .
 COPY prisma/db/prisma-client ./prisma/db/prisma-client
 COPY prisma/schema.prisma ./prisma/schema.prisma
 
-# Ensure query engine is executable and exists
-RUN chmod +x ./prisma/db/prisma-client/query-engine && \
-    ls -la ./prisma/db/prisma-client/ && \
-    if [ -f ./prisma/db/prisma-client/query-engine ]; then \
-        echo "✅ Query engine found in final image"; \
+# Ensure query engine files are in place
+RUN cd ./prisma/db/prisma-client && \
+    if [ -f query-engine-linux-static-x64_gen.go ]; then \
+        echo "✅ Linux query engine found"; \
     else \
-        echo "❌ ERROR: Query engine missing in final image!"; \
+        echo "❌ ERROR: Linux query engine not found!"; \
         exit 1; \
     fi
 
