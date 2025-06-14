@@ -13,10 +13,13 @@ COPY prisma ./prisma
 # Install Prisma CLI
 RUN npm install -g prisma
 
-# Run Prisma CLI generate to process the schema
+# Run Prisma operations in sequence
 RUN npx prisma generate && \
+    echo "Prisma generate completed" && \
+    npx prisma db push --accept-data-loss && \
+    echo "Prisma db push completed" && \
     ls -la ./prisma && \
-    echo "Prisma CLI generate completed"
+    echo "Prisma files after generate and push:"
 
 # Install Prisma Client Go
 RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/download/prisma-client-go.sh | sh
