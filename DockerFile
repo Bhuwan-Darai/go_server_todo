@@ -14,9 +14,11 @@ RUN go mod download
 # Install Prisma CLI and prisma-client-go
 RUN go install github.com/steebchen/prisma-client-go@latest
 
-# Copy Prisma schema and generate client
+# Copy Prisma schema
 COPY prisma ./prisma
-RUN go run github.com/steebchen/prisma-client-go generate
+
+# Generate Prisma client with explicit binary targets
+RUN go run github.com/steebchen/prisma-client-go generate --binary-targets=native,linux-musl
 
 # Verify Prisma client generation
 RUN ls -la prisma/db/prisma-client || (echo "Prisma client generation failed" && exit 1)
@@ -25,7 +27,7 @@ RUN ls -la prisma/db/prisma-client || (echo "Prisma client generation failed" &&
 COPY . .
 
 # Build Go binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o app .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
 
 # Expose port and run app
 EXPOSE 8000
