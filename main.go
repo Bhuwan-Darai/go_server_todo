@@ -41,7 +41,15 @@ func main() {
 	app := fiber.New()
 
 	// CORS middleware
-	origins := "http://localhost:3000, https://go-server-todo-frontend.vercel.app/"
+	env := os.Getenv("ENV")
+	var origins string
+
+	if env == "production" {
+		origins = "https://go-server-todo-frontend.vercel.app"
+	} else {
+		// default to development
+		origins = "http://localhost:3000"
+	}
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     origins,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
