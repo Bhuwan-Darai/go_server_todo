@@ -56,6 +56,8 @@ func main() {
 	db := config.ConnectDB()
 	defer db.Prisma.Disconnect()
 
+	log.Println("✅ Connected to Supabase PostgreSQL")
+
 	// Create a GraphQL Resolver and pass DB client
 	resolver := &graph.Resolver{
 		DB: db,
