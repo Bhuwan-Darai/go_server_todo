@@ -1,38 +1,4 @@
-# Stage 1: Generate Prisma Go client and fetch query engine
-FROM node:18-alpine as prisma-builder
-
-WORKDIR /app
-
-# Install required tools
-RUN apk add --no-cache curl go git
-
-# Copy schema and dependencies
-COPY go.mod go.sum ./
-COPY prisma ./prisma
-
-# Install Prisma CLI
-RUN npm install -g prisma
-
-# Generate Prisma client and apply schema to DB
-RUN npx prisma generate --binary-target=linux-musl && \
-    npx prisma db push --accept-data-loss
-
-# Install Prisma Client Go CLI
-RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/download/prisma-client-go.sh | sh
-
-# Generate Prisma Go client with binary target
-RUN GOOS=linux GOARCH=amd64 go run github.com/steebchen/prisma-client-go generate --binary-target=linux-musl
-
-# Download and set up query engine binary explicitly
-RUN mkdir -p ./prisma/db/prisma-client && \
-    curl -L https://binaries.prisma.sh/all_commits/5e91ac6b6a6fd5269b456d6063faed3d59a1700c/linux-musl/query-engine.gz -o ./prisma/db/prisma-client/query-engine.gz && \
-    gunzip ./prisma/db/prisma-client/query-engine.gz && \
-    mv ./prisma/db/prisma-client/query-engine ./prisma/db/prisma-client/query-engine && \
-    chmod +x ./prisma/db/prisma-client/query-engine && \
-    ls -la ./prisma/db/prisma-client && \
-    [ -f ./prisma/db/prisma-client/query-engine ] || (echo "❌ query-engine not found after unzip!" && exit 1)
-
-# Stage 2: Build the Go application
+# Stage 1: Build the Go application
 FROM golang:1.21-alpine as builder
 
 WORKDIR /app
@@ -47,14 +13,10 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Copy generated Prisma client and query engine from prisma-builder stage
-COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
-COPY --from=prisma-builder /app/prisma/schema.prisma ./prisma/schema.prisma
-
 # Build the Go application binary
 RUN GOOS=linux GOARCH=amd64 go build -o main .
 
-# Stage 3: Final runtime image
+# Stage 2: Final runtime image
 FROM alpine:latest
 
 WORKDIR /app
@@ -66,8 +28,8 @@ RUN apk add --no-cache ca-certificates libc6-compat
 COPY --from=builder /app/main .
 
 # Copy Prisma client and query engine
-COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
-COPY --from=prisma-builder /app/prisma/schema.prisma ./prisma/schema.prisma
+COPY prisma/db/prisma-client ./prisma/db/prisma-client
+COPY prisma/schema.prisma ./prisma/schema.prisma
 
 # Ensure query engine is executable and exists
 RUN chmod +x ./prisma/db/prisma-client/query-engine && \
