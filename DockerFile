@@ -1,55 +1,53 @@
-# Stage 1: Build Prisma client
+# Stage 1: Generate Prisma Go client
 FROM node:18-alpine as prisma-builder
 
 WORKDIR /app
 
-# Copy only prisma schema files to install client
-COPY prisma ./prisma
-COPY go.mod go.sum ./
+# Install Prisma CLI and curl
 RUN apk add --no-cache curl
+
+# Copy necessary files
+COPY go.mod go.sum ./
+COPY prisma ./prisma
 
 # Install Prisma CLI
 RUN npm install -g prisma
 
-# Initialize prisma client-go
+# Install Go and generate the Prisma client
 RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/download/prisma-client-go.sh | sh
+RUN go run github.com/steebchen/prisma-client-go generate
 
-# Generate the Prisma client
-RUN prisma generate
-
-# Stage 2: Build Go binary
+# Stage 2: Build the Go binary
 FROM golang:1.21-alpine as builder
 
 WORKDIR /app
 
-COPY --from=prisma-builder /app /app
-
-# Install required dependencies
+# Install Git for Go modules
 RUN apk add --no-cache git
 
-# Copy source code
-COPY . .
-
-# Download Go dependencies
+COPY go.mod go.sum ./
 RUN go mod download
 
-# Build the Go app
+# Copy everything, including generated Prisma client from prisma-builder
+COPY . .
+COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
+
+# Build your Go app
 RUN go build -o main .
 
-# Final stage: Create a minimal image
+# Stage 3: Final image
 FROM alpine:latest
 
 WORKDIR /root/
 
-# Install necessary CA certs
+# Add CA certs
 RUN apk add --no-cache ca-certificates
 
+# Copy the compiled binary and Prisma client with engine
 COPY --from=builder /app/main .
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/generated ./generated
 
-# Expose the port your app runs on
+# Default port
 EXPOSE 8080
 
-# Command to run the app
 CMD ["./main"]
