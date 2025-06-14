@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 )
@@ -13,6 +14,11 @@ func ConnectDB() *db.PrismaClient {
 
 	if databaseURL == "" {
 		log.Fatal("❌ DATABASE_URL is not set in environment")
+	}
+
+	// Replace pgbouncer=true with sslmode=require for direct connection
+	if os.Getenv("PRISMA_DIRECT_CONNECTION") == "true" {
+		databaseURL = strings.Replace(databaseURL, "pgbouncer=true", "sslmode=require", 1)
 	}
 
 	log.Printf("📦 Connecting to DB: %s", databaseURL)
