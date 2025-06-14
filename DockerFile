@@ -3,8 +3,8 @@ FROM node:18-alpine as prisma-builder
 
 WORKDIR /app
 
-# Install Prisma CLI and curl
-RUN apk add --no-cache curl
+# Install Prisma CLI, curl, and Go
+RUN apk add --no-cache curl go
 
 # Copy necessary files
 COPY go.mod go.sum ./
@@ -13,9 +13,23 @@ COPY prisma ./prisma
 # Install Prisma CLI
 RUN npm install -g prisma
 
-# Install Go and generate the Prisma client
+# Run Prisma CLI generate to process the schema
+RUN npx prisma generate && \
+    ls -la ./prisma && \
+    echo "Prisma CLI generate completed"
+
+# Install Prisma Client Go
 RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/download/prisma-client-go.sh | sh
-RUN go run github.com/steebchen/prisma-client-go generate
+
+# Generate Prisma Client Go and debug output
+RUN go run github.com/steebchen/prisma-client-go generate && \
+    ls -la ./prisma/db/prisma-client && \
+    echo "Prisma Client Go generation completed"
+
+# Download query engine binary
+RUN go run github.com/steebchen/prisma-client-go prefetch && \
+    ls -la ./prisma && \
+    echo "Query engine prefetch completed"
 
 # Stage 2: Build the Go binary
 FROM golang:1.21-alpine as builder
@@ -28,9 +42,13 @@ RUN apk add --no-cache git
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy everything, including generated Prisma client from prisma-builder
+# Copy source code and generated Prisma client
 COPY . .
 COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
+COPY --from=prisma-builder /app/prisma ./prisma
+
+# Debug: Verify copied files
+RUN ls -la ./prisma && ls -la ./prisma/db/prisma-client
 
 # Build your Go app
 RUN go build -o main .
@@ -40,14 +58,21 @@ FROM alpine:latest
 
 WORKDIR /root/
 
-# Add CA certs
+# Add CA certificates
 RUN apk add --no-cache ca-certificates
 
-# Copy the compiled binary and Prisma client with engine
+# Copy the compiled binary
 COPY --from=builder /app/main .
-COPY --from=builder /app/prisma ./prisma
+
+# Copy the Prisma schema and query engine
+COPY --from=prisma-builder /app/prisma ./prisma
+
+# Debug: Verify files in final image
+RUN ls -la ./prisma && \
+    ls -la ./prisma/db/prisma-client && \
+    chmod +x ./prisma/query-engine || echo "Query engine not found"
 
 # Default port
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["./main"]
