@@ -1,14 +1,14 @@
-# services:
-#   - type: web
-#     name: go-fiber-graphql
-#     env: docker
-#     plan: free
-#     region: singapore
-#     dockerCommand: ./main
-#     envVars:
-#       - key: DATABASE_URL
-#         value: postgresql://postgres.rilzoeheapvcxmrxatfx:DHan15@@@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
-#       - key: PORT
-#         value: 8000
-#     healthCheckPath: /health
-#     autoDeploy: false
+services:
+  - type: web
+    name: go-fiber-graphql
+    env: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./DockerFile
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres.rilzoeheapvcxmrxatfx:DHan15@@@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health  
+    autoDeploy: true
