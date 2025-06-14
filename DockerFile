@@ -1,39 +1,25 @@
-# Stage 1: Builder
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine
 
+# Install dependencies
+RUN apk add --no-cache git
+
+# Set working directory
 WORKDIR /app
 
-# Install needed packages
-RUN apk add --no-cache git gcc musl-dev
-
-# Copy Go mod files
-COPY go.mod go.sum ./
+# Copy go modules and download them
+COPY go.mod ./
+COPY go.sum ./
 RUN go mod download
 
-# Copy source
+# Copy rest of the app
 COPY . .
 
-# Optional: gqlgen codegen (if used)
-RUN go install github.com/99designs/gqlgen@v0.17.74
-RUN /go/bin/gqlgen generate || echo "Skipping gqlgen generate (not needed or already done)"
+# Run Prisma generate inside Docker
+RUN go run github.com/steebchen/prisma-client-go generate
 
-# Build binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+# Build Go binary
+RUN go build -o app main.go
 
-# Stage 2: Runtime
-FROM alpine:latest
-
-RUN apk add --no-cache ca-certificates
-
-WORKDIR /app
-
-COPY --from=builder /app/main .
-
-# Expose the port your app will use
+# Expose port and run app
 EXPOSE 8000
-
-# Set environment variables
-ENV PORT=8000
-
-# Run the binary
-CMD ["./main"]
+CMD ["./app"]
