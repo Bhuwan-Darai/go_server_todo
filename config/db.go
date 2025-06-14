@@ -23,12 +23,30 @@ func ConnectDB() *db.PrismaClient {
 	clientDir := filepath.Join(prismaDir, "db/prisma-client")
 	queryEngine := filepath.Join(clientDir, "query-engine")
 
+	// Check client directory
 	if _, err := os.Stat(clientDir); os.IsNotExist(err) {
 		log.Fatalf("❌ Prisma client directory not found at: %s", clientDir)
 	}
 
+	// Check query engine
 	if _, err := os.Stat(queryEngine); os.IsNotExist(err) {
+		// Try to find any query engine file
+		files, _ := filepath.Glob(filepath.Join(prismaDir, "**/query-engine*"))
+		if len(files) > 0 {
+			log.Printf("Found query engine files: %v", files)
+		}
 		log.Fatalf("❌ Prisma query engine not found at: %s", queryEngine)
+	}
+
+	// Check query engine permissions
+	if info, err := os.Stat(queryEngine); err == nil {
+		log.Printf("Query engine permissions: %v", info.Mode())
+		if info.Mode()&0111 == 0 {
+			log.Printf("Query engine is not executable, attempting to fix...")
+			if err := os.Chmod(queryEngine, 0755); err != nil {
+				log.Printf("Failed to make query engine executable: %v", err)
+			}
+		}
 	}
 
 	log.Printf("✅ Found Prisma client at: %s", clientDir)
