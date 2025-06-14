@@ -23,14 +23,12 @@ RUN curl -sSL https://github.com/steebchen/prisma-client-go/releases/latest/down
 # Generate Prisma Go client with explicit binary target
 RUN GOOS=linux GOARCH=amd64 go run github.com/steebchen/prisma-client-go generate --binary-target=linux-musl
 
-# Download query engine binary explicitly
-RUN curl -L https://binaries.prisma.sh/all_commits/5e91ac6b6a6fd5269b456d6063faed3d59a1700c/linux-musl/query-engine.gz -o ./prisma/db/prisma-client/query-engine.gz && \
+# Download and setup query engine binary explicitly
+RUN mkdir -p ./prisma/db/prisma-client && \
+    curl -L https://binaries.prisma.sh/all_commits/5e91ac6b6a6fd5269b456d6063faed3d59a1700c/linux-musl/query-engine.gz -o ./prisma/db/prisma-client/query-engine.gz && \
     gunzip ./prisma/db/prisma-client/query-engine.gz && \
-    chmod +x ./prisma/db/prisma-client/query-engine
-
-# Verify files
-RUN ls -la ./prisma/db/prisma-client && \
-    echo "Files in prisma/db/prisma-client:"
+    chmod +x ./prisma/db/prisma-client/query-engine && \
+    ls -la ./prisma/db/prisma-client/
 
 # Stage 2: Build the Go application
 FROM golang:1.21-alpine as builder
@@ -69,11 +67,11 @@ COPY --from=builder /app/main .
 COPY --from=prisma-builder /app/prisma/db/prisma-client ./prisma/db/prisma-client
 COPY --from=prisma-builder /app/prisma/schema.prisma ./prisma/schema.prisma
 
-# Verify presence of query engine in final image
-RUN ls -la ./prisma/db/prisma-client && \
+# Set up proper permissions and verify query engine
+RUN chmod +x ./prisma/db/prisma-client/query-engine && \
+    ls -la ./prisma/db/prisma-client/ && \
     if [ -f ./prisma/db/prisma-client/query-engine ]; then \
         echo "✅ Query engine found in final image"; \
-        chmod +x ./prisma/db/prisma-client/query-engine; \
     else \
         echo "❌ ERROR: Query engine missing in final image!"; \
         exit 1; \

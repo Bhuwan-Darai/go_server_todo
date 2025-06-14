@@ -3,8 +3,8 @@ package config
 import (
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"time"
 
 	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 )
@@ -31,51 +31,28 @@ func ConnectDB() *db.PrismaClient {
 
 	// Check query engine
 	if _, err := os.Stat(queryEngine); os.IsNotExist(err) {
-		// Try to find any query engine file
-		files, _ := filepath.Glob(filepath.Join(prismaDir, "**/query-engine*"))
-		if len(files) > 0 {
-			log.Printf("Found query engine files: %v", files)
-			// Try to use the first found query engine
-			if err := os.Symlink(files[0], queryEngine); err != nil {
-				log.Printf("Failed to create symlink: %v", err)
-			}
-		} else {
-			// Try to download the query engine
-			log.Printf("Attempting to download query engine...")
-			cmd := exec.Command("curl", "-L",
-				"https://binaries.prisma.sh/all_commits/5e91ac6b6a6fd5269b456d6063faed3d59a1700c/linux-musl/query-engine.gz",
-				"-o", queryEngine+".gz")
-			if err := cmd.Run(); err != nil {
-				log.Printf("Failed to download query engine: %v", err)
-			} else {
-				cmd = exec.Command("gunzip", queryEngine+".gz")
-				if err := cmd.Run(); err != nil {
-					log.Printf("Failed to extract query engine: %v", err)
-				} else {
-					os.Chmod(queryEngine, 0755)
-				}
-			}
-		}
+		log.Fatalf("❌ Query engine not found at: %s", queryEngine)
 	}
 
-	// Check query engine permissions
-	if info, err := os.Stat(queryEngine); err == nil {
-		log.Printf("Query engine permissions: %v", info.Mode())
-		if info.Mode()&0111 == 0 {
-			log.Printf("Query engine is not executable, attempting to fix...")
-			if err := os.Chmod(queryEngine, 0755); err != nil {
-				log.Printf("Failed to make query engine executable: %v", err)
-			}
-		}
+	// Ensure query engine is executable
+	if err := os.Chmod(queryEngine, 0755); err != nil {
+		log.Printf("⚠️ Warning: Failed to set query engine permissions: %v", err)
 	}
 
 	log.Printf("✅ Found Prisma client at: %s", clientDir)
 	log.Printf("✅ Found query engine at: %s", queryEngine)
 
-	if err := database.Prisma.Connect(); err != nil {
-		log.Fatalf("❌ Error connecting to database: %v", err)
+	// Try to connect with retries
+	var err error
+	for i := 0; i < 5; i++ {
+		if err = database.Prisma.Connect(); err == nil {
+			log.Println("✅ Successfully connected to database")
+			return database
+		}
+		log.Printf("⚠️ Connection attempt %d failed: %v", i+1, err)
+		time.Sleep(time.Second * 2)
 	}
 
-	log.Println("✅ Successfully connected to database")
+	log.Fatalf("❌ Failed to connect to database after 5 attempts: %v", err)
 	return database
 }

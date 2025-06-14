@@ -71,6 +71,13 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
+	// Add health check endpoint
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"status": "ok",
+		})
+	})
+
 	// Log server startup
 	// log.Printf("Server starting on port %s", PORT)
 
