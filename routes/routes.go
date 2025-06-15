@@ -45,5 +45,5 @@ func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
 	})
 
 	// GraphQL Playground (for development)
-	app.Get("/", adaptor.HTTPHandlerFunc(playground.Handler("GraphQL Playground", "/graphql")))
+	app.Get("/playground", adaptor.HTTPHandlerFunc(playground.Handler("GraphQL Playground", "/graphql")))
 }
