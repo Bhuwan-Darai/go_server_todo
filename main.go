@@ -48,7 +48,7 @@ func main() {
 		origins = "https://go-server-todo-frontend.vercel.app"
 	} else {
 		// default to development
-		origins = "http://localhost:3000"
+		origins = "*"
 	}
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     origins,

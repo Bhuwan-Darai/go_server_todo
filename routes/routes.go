@@ -18,7 +18,12 @@ import (
 // SetupRoutes configures Fiber routes for GraphQL and Playground
 func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
 	// Enable CORS for frontend access
-	app.Use(cors.New())
+	app.Use(cors.New(
+		cors.Config{
+			AllowOrigins: "*",
+			AllowHeaders: "Origin, Content-Type, Accept",
+		},
+	))
 
 	// GraphQL handler
 	graphqlHandler := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
