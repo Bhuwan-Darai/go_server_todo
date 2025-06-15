@@ -2,6 +2,7 @@ package routes
 
 import (
 	"time"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -40,6 +41,10 @@ func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
 
 	// GraphQL endpoint
 	app.Post("/graphql", adaptor.HTTPHandler(graphqlHandler))
+	app.Get("/graphql", adaptor.HTTPHandler(graphqlHandler)) // Add GET support (optional)
+	app.Options("/graphql", func(c *fiber.Ctx) error {
+		return c.SendStatus(fiber.StatusOK) // Handle CORS preflight
+	})
 
 	// GraphQL Playground (for development)
 	app.Get("/", adaptor.HTTPHandlerFunc(playground.Handler("GraphQL Playground", "/graphql")))
