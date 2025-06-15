@@ -36,7 +36,7 @@ func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
 	})
 
 	// GraphQL endpoint - handle all methods
-	app.Use("/graphql", func(c *fiber.Ctx) error {
+	app.Use("/", func(c *fiber.Ctx) error {
 		// Handle OPTIONS request
 		if c.Method() == "OPTIONS" {
 			return c.SendStatus(fiber.StatusOK)
