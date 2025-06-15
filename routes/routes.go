@@ -11,15 +11,11 @@ import (
 	"github.com/Bhuwan-Darai/goCrud/graph"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
 // SetupRoutes configures Fiber routes for GraphQL and Playground
 func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
-	// Enable CORS for frontend access
-	app.Use(cors.New())
-
 	// GraphQL handler
 	graphqlHandler := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
@@ -40,11 +36,7 @@ func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
 	})
 
 	// GraphQL endpoint
-	app.Post("/graphql", adaptor.HTTPHandler(graphqlHandler))
-	app.Get("/graphql", adaptor.HTTPHandler(graphqlHandler)) // Add GET support (optional)
-	app.Options("/graphql", func(c *fiber.Ctx) error {
-		return c.SendStatus(fiber.StatusOK) // Handle CORS preflight
-	})
+	app.All("/graphql", adaptor.HTTPHandler(graphqlHandler)) // Handle all methods including OPTIONS
 
 	// GraphQL Playground (for development)
 	app.Get("/", adaptor.HTTPHandlerFunc(playground.Handler("GraphQL Playground", "/graphql")))
