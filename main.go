@@ -45,7 +45,7 @@ func main() {
 	var origins string
 
 	if env == "production" {
-		origins = "https://go-server-todo-frontend.vercel.app"
+		origins = "https://go-server-todo-frontend.vercel.app/"
 	} else {
 		// default to development
 		origins = "http://localhost:3000"
