@@ -57,6 +57,9 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// actual origin used
+	fmt.Println("Origins:", origins)
+
 	// Debug: Check if Prisma engine files exist
 	checkPrismaEngine()
 
