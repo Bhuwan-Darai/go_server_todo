@@ -35,8 +35,14 @@ func SetupRoutes(app *fiber.App, resolver *graph.Resolver) {
 		Cache: lru.New[string](100),
 	})
 
-	// GraphQL endpoint
-	app.All("/graphql", adaptor.HTTPHandler(graphqlHandler)) // Handle all methods including OPTIONS
+	// GraphQL endpoint - handle all methods
+	app.Use("/graphql", func(c *fiber.Ctx) error {
+		// Handle OPTIONS request
+		if c.Method() == "OPTIONS" {
+			return c.SendStatus(fiber.StatusOK)
+		}
+		return adaptor.HTTPHandler(graphqlHandler)(c)
+	})
 
 	// GraphQL Playground (for development)
 	app.Get("/", adaptor.HTTPHandlerFunc(playground.Handler("GraphQL Playground", "/graphql")))

@@ -52,10 +52,11 @@ func main() {
 	}
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     origins,
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Requested-With",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Requested-With, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Access-Control-Allow-Methods",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		ExposeHeaders:    "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers",
 	}))
 
 	// actual origin used
