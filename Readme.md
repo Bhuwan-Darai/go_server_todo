@@ -54,3 +54,79 @@ go run main.go
 - Server runs on: http://localhost:3000
 
 - GraphQL Playground: http://localhost:3000/graphql
+
+## Test the server running status in browser
+
+- localhost:8000/health || localhost:8000/hello
+
+## 🚀 Deployment
+
+### Docker Deployment
+
+1. Build the Docker image:
+
+```bash
+docker build -t go-todo-server .
+```
+
+2. Run the container:
+
+```bash
+docker run -p 8000:8000 --env-file .env go-todo-server
+```
+
+### Data Flow Architecture
+
+The application follows a layered architecture:
+
+1. **API Layer (GraphQL)**
+
+   - Entry point for all client requests
+   - Handles GraphQL queries and mutations
+   - Located in `graph/` directory
+
+2. **Service Layer**
+
+   - Contains business logic
+   - Processes data between API and database
+   - Implements resolvers for GraphQL operations
+
+3. **Database Layer (Prisma)**
+   - Manages database operations
+   - Provides type-safe database access
+   - Handles migrations and schema changes
+
+### Environment Variables
+
+Required environment variables for deployment:
+
+```
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname?sslmode=disable"
+PORT=8000
+ENV=production
+```
+
+### Production Considerations
+
+1. **Database**
+
+   - Use a managed PostgreSQL service in production
+   - Ensure proper backup and monitoring
+   - Configure connection pooling
+
+2. **Security**
+
+   - Enable SSL/TLS for database connections
+   - Implement proper authentication
+   - Use secure environment variables
+
+3. **Performance**
+
+   - Configure appropriate connection pools
+   - Enable query caching where applicable
+   - Monitor server resources
+
+4. **Monitoring**
+   - Set up logging and monitoring
+   - Track database performance
+   - Monitor API response times
