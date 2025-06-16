@@ -7,11 +7,12 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/Bhuwan-Darai/goCrud/graph/model"
-	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Bhuwan-Darai/goCrud/graph/model"
+	db "github.com/Bhuwan-Darai/goCrud/prisma/db/prisma-client"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -145,7 +146,42 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, taskID string, input 
 
 // DeleteTask is the resolver for the deleteTask field.
 func (r *mutationResolver) DeleteTask(ctx context.Context, taskID string) (*model.Response, error) {
-	panic(fmt.Errorf("not implemented: DeleteTask - deleteTask"))
+	// Try to find the task first
+	taskQuery := r.DB.Task.FindUnique(
+		db.Task.TaskID.Equals(taskID),
+	)
+
+	task, err := taskQuery.Exec(ctx)
+	if err != nil {
+		if strings.Contains(err.Error(), "No Task found") {
+			return &model.Response{
+				Success: false,
+				Message: "Task not found",
+			}, nil
+		}
+		return &model.Response{
+			Success: false,
+			Message: fmt.Sprintf("Failed to query task: %v", err),
+		}, nil
+	}
+
+	// Delete the task
+	_, err = taskQuery.Delete().Exec(ctx)
+	if err != nil {
+		return &model.Response{
+			Success: false,
+			Message: fmt.Sprintf("Failed to delete task: %v", err),
+		}, nil
+	}
+
+	return &model.Response{
+		Success: true,
+		Message: "Task deleted successfully",
+		Data: map[string]interface{}{
+			"taskId": task.TaskID,
+			"title":  task.Title,
+		},
+	}, nil
 }
 
 // Users is the resolver for the users field.
