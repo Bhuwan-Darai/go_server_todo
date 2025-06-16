@@ -17,6 +17,8 @@ import (
 
 const defaultPort = "8000"
 
+//go:generate go run github.com/steebchen/prisma-client-go generate
+
 func main() {
 	log.Println("PORT:", os.Getenv("PORT"))
 	log.Println("DATABASE_URL:", os.Getenv("DATABASE_URL"))
@@ -48,7 +50,7 @@ func main() {
 		origins = "https://go-server-todo-frontend.vercel.app"
 	} else {
 		// default to development
-		origins = "http://localhost:5173"			
+		origins = "http://localhost:5173"
 	}
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     origins,
