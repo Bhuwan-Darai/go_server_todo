@@ -98,9 +98,9 @@ RUN go run github.com/steebchen/prisma-client-go generate
 
 # Clean up unnecessary query engine files
 RUN cd prisma/db/prisma-client && \
-    rm -f query-engine-windows_gen.go query-engine-linux-static-x64_gen.go && \
-    if [ ! -f query-engine-debian-openssl-3.0.x_gen.go ]; then \
-        echo "❌ ERROR: Debian OpenSSL query engine not found!"; \
+    rm -f query-engine-windows_gen.go query-engine-debian-openssl-3.0.x_gen.go && \
+    if [ ! -f query-engine-linux-static-x64_gen.go ]; then \
+        echo "❌ ERROR: Linux static query engine not found!"; \
         exit 1; \
     fi
 
@@ -108,12 +108,12 @@ RUN cd prisma/db/prisma-client && \
 RUN go build -o /app .
 
 # Stage 2: Minimal runtime image
-FROM debian:bullseye-slim
+FROM alpine:latest
 
 WORKDIR /app
 
 # Install CA certificates (required for HTTPS requests in Go apps)
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates
 
 # Copy binary from builder stage
 COPY --from=build /app /app
