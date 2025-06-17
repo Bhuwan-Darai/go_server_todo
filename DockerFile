@@ -79,34 +79,53 @@
 # CMD ["/app"]
 
 
-# Stage 1: Build
-FROM golang:1.24 as build
+# ----------------------
+# Stage 1: Build Stage
+# ----------------------
+FROM golang:1.21 as build
 
+# Set working directory
 WORKDIR /app
 
-# Add Go modules
+# Copy go.mod and go.sum
 COPY go.mod go.sum ./
+
+# Download dependencies
 RUN go mod download
 
-# (Optional) Prisma client generation
+# Install Prisma Go client generator
 RUN go install github.com/steebchen/prisma-client-go@latest
+
+# Copy the entire project AFTER go mod download
 COPY . .
 
-# Generate Prisma client (optional)
-RUN go generate ./...
+# IMPORTANT: Regenerate only the Prisma client inside Docker
+RUN rm -f ./prisma/db/prisma-client/*_gen.go \
+ && go generate ./prisma/db/prisma-client
 
-# Build the binary
+# Build the Go binary
 RUN go build -o app .
 
-# Final stage: Run binary
+# ------------------------
+# Stage 2: Runtime Stage
+# ------------------------
 FROM alpine:latest
 
+# Install necessary CA certs if needed (recommended for HTTP calls)
+RUN apk add --no-cache ca-certificates
+
+# Set working directory
 WORKDIR /root/
+
+# Copy built binary from build stage
 COPY --from=build /app/app .
 
+# Expose and set environment variables
 EXPOSE 8000
 ENV PORT=8000
 ENV ENV=production
 
+# Run the binary
 CMD ["./app"]
+
 
