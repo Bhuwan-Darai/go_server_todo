@@ -1,110 +1,85 @@
-# # Stage 1: Build the Go application
-# FROM golang:1.21-alpine as builder
+# Stage 1: Build the Go application
+FROM golang:1.21-alpine as builder
 
-# WORKDIR /app
+WORKDIR /app
 
-# # Install Git for Go modules
-# RUN apk add --no-cache git
+# Install Git for Go modules
+RUN apk add --no-cache git
 
-# # Copy go dependencies and download them
-# COPY go.mod go.sum ./
-# RUN go mod download
-
-# # Copy source code
-# COPY . .
-
-# # Build the Go application binary
-# RUN GOOS=linux GOARCH=amd64 go build -o main .
-
-# # Stage 2: Final runtime image
-# FROM alpine:latest
-
-# WORKDIR /app
-
-# # Install runtime dependencies
-# RUN apk add --no-cache ca-certificates libc6-compat
-
-# # Copy built Go binary
-# COPY --from=builder /app/main .
-
-# # Copy Prisma client and query engine
-# COPY prisma/db/prisma-client ./prisma/db/prisma-client
-# COPY prisma/schema.prisma ./prisma/schema.prisma
-
-# # Ensure query engine files are in place
-# RUN cd ./prisma/db/prisma-client && \
-#     if [ -f query-engine-linux-static-x64_gen.go ]; then \
-#         echo "✅ Linux query engine found"; \
-#     else \
-#         echo "❌ ERROR: Linux query engine not found!"; \
-#         exit 1; \
-#     fi
-
-# # Set environment and expose port
-# EXPOSE 8000
-# ENV PORT=8000
-# ENV ENV=production
-
-# # Run the application
-# CMD ["./main"]
-
-# second try 
-# Stage 1: Build stage
-FROM golang:1.22 AS build
-
-WORKDIR /workspace
-
-# Copy go.mod and go.sum first to download dependencies
+# Copy go dependencies and download them
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy Prisma schema
-COPY prisma ./prisma
-
-# Install Prisma client dependencies and generate client
-RUN go run github.com/steebchen/prisma-client-go prefetch
-RUN go run github.com/steebchen/prisma-client-go generate
-
-# Copy the rest of the source code
+# Copy source code
 COPY . .
 
-# Verify platform-specific query engine
-RUN if [ ! -f prisma/db/prisma-client/query-engine-linux-static-x64_gen.go ]; then \
-        echo "❌ ERROR: Linux static query engine not found!"; \
-        exit 1; \
-    fi
+# Build the Go application binary
+RUN GOOS=linux GOARCH=amd64 go build -o main .
 
-# Build the binary with Render's flags for static linking
-RUN go build -tags netgo -ldflags '-s -w' -o /app/app .
-
-# Stage 2: Minimal runtime image
+# Stage 2: Final runtime image
 FROM alpine:latest
 
 WORKDIR /app
 
-# Install CA certificates and wget for health checks
-RUN apk add --no-cache ca-certificates wget
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates libc6-compat
 
-# Copy the binary from the build stage
-COPY --from=build /app/app /app/app
+# Copy built Go binary
+COPY --from=builder /app/main .
 
-# Copy Prisma schema and generated client
-COPY --from=build /workspace/prisma ./prisma
+# Copy Prisma client and query engine
+COPY prisma/db/prisma-client ./prisma/db/prisma-client
+COPY prisma/schema.prisma ./prisma/schema.prisma
 
-# Ensure the binary is executable
-RUN chmod +x /app/app
+# Ensure query engine files are in place
+RUN cd ./prisma/db/prisma-client && \
+    if [ -f query-engine-linux-static-x64_gen.go ]; then \
+    echo "✅ Linux query engine found"; \
+    else \
+    echo "❌ ERROR: Linux query engine not found!"; \
+    exit 1; \
+    fi
 
-# Expose the port (Render uses PORT env var)
+# Set environment and expose port
 EXPOSE 8000
 ENV PORT=8000
 ENV ENV=production
 
-# Add health check for Render
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-    CMD wget --spider http://localhost:8000/health || exit 1
+# Run the application
+CMD ["./main"]
 
-# Set the entrypoint to the binary
-CMD ["/app/app"]
+
+
+
+
+# # Stage 2: Minimal runtime image
+# FROM alpine:latest
+
+# WORKDIR /app
+
+# # Install CA certificates and wget for health checks
+# RUN apk add --no-cache ca-certificates wget
+
+# # Copy the binary from the build stage
+# COPY --from=build /app/app /app/app
+
+# # Copy Prisma schema and generated client
+# COPY --from=build /workspace/prisma ./prisma
+
+# # Ensure the binary is executable
+# RUN chmod +x /app/app
+
+# # Expose the port (Render uses PORT env var)
+# EXPOSE 8000
+# ENV PORT=8000
+# ENV ENV=production
+
+# # Add health check for Render
+# HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+#     CMD wget --spider http://localhost:8000/health || exit 1
+
+# # Set the entrypoint to the binary
+# CMD ["/app/app"]
 
 
 
