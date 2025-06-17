@@ -1,34 +1,29 @@
 # Stage 1: Build stage
-FROM golang:1.24-alpine AS build
+FROM golang:1.22-alpine AS build
 
 WORKDIR /workspace
 
 # Install git for Go modules and Node.js/npm for Prisma CLI
 RUN apk add --no-cache git nodejs npm
 
+# Copy Prisma schema first
+COPY prisma/schema.prisma ./prisma/
 
-
-# Install Prisma CLI
+# Install Prisma CLI and generate client
 RUN npm install prisma --save-dev
-
-# Generate Prisma client with Prisma CLI
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
-# Copy Prisma schema and go.mod/go.sum
-COPY prisma/schema.prisma ./prisma/
+# Copy go.mod and go.sum
 COPY go.mod go.sum ./
 
-
-# Install Prisma client Go dependencies
+# Install Prisma client Go dependencies and generate client
 RUN go run github.com/steebchen/prisma-client-go prefetch
-
-# Generate Prisma client for Go
 RUN go run github.com/steebchen/prisma-client-go generate
 
 # Download remaining Go dependencies
 RUN go mod download
 
-# Copy the entire project
+# Copy the rest of the source code
 COPY . .
 
 # Verify platform-specific query engine
@@ -51,7 +46,7 @@ RUN apk add --no-cache ca-certificates wget
 # Copy the binary from the build stage
 COPY --from=build /app/app /app/app
 
-# Copy Prisma schema and migrations
+# Copy Prisma schema and generated client
 COPY --from=build /workspace/prisma ./prisma
 
 # Ensure the binary is executable
