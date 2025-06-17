@@ -49,29 +49,63 @@
 # CMD ["./main"]
 
 # second try 
+# Stage 1: Build stage
+FROM golang:1.24 AS build
 
-FROM golang:1.20 as build
- 
 WORKDIR /workspace
- 
-# add go modules lockfiles
+
+# Copy go.mod and go.sum first to cache dependencies
 COPY go.mod go.sum ./
 RUN go mod download
- 
-# prefetch the binaries, so that they will be cached and not downloaded on each change
+
+# Install Prisma client dependencies
 RUN go run github.com/steebchen/prisma-client-go prefetch
- 
-COPY . ./
- 
-# generate the Prisma Client Go client
+
+# Copy the entire project
+COPY . .
+
+# Generate Prisma client
 RUN go run github.com/steebchen/prisma-client-go generate
-# or, if you use go generate to run the generator, use the following line instead
-# RUN go generate ./...
- 
-# build the binary with all dependencies
-RUN go build -o /app .
- 
-CMD ["/app"]
+
+# Verify Prisma client files
+RUN ls -l prisma/db/prisma-client/ && \
+    if [ ! -f prisma/db/prisma-client/query-engine-linux-static-x64_gen.go ]; then \
+        echo "❌ ERROR: Linux static query engine not found!"; \
+        exit 1; \
+    fi
+
+# Build the binary with Render's flags for static linking
+RUN go build -tags netgo -ldflags '-s -w' -o /app/app .
+
+# Stage 2: Minimal runtime image
+FROM alpine:latest
+
+WORKDIR /app
+
+# Install CA certificates for HTTPS requests
+RUN apk add --no-cache ca-certificates
+
+# Copy the binary from the build stage
+COPY --from=build /app/app /app/app
+
+# Copy Prisma schema and migrations
+COPY --from=build /workspace/prisma ./prisma
+
+# Ensure the binary is executable
+RUN chmod +x /app/app
+
+# Expose the port (Render uses PORT env var, defaulting to 8000)
+EXPOSE 8000
+ENV PORT=8000
+ENV ENV=production
+
+# Add health check for Render
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+    CMD wget --spider http://localhost:${PORT}/health || exit 1
+
+# Set the entrypoint to the binary
+CMD ["/app/app"]
+
 
 
 
