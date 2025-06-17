@@ -112,17 +112,23 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install CA certificates (required for HTTPS requests in Go apps)
-RUN apk add --no-cache ca-certificates
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy binary from builder stage
 COPY --from=build /app/app /app
+RUN chmod +x /app/app
 
 # Copy prisma schema & migrations if needed
 COPY --from=build /workspace/prisma ./prisma
 
+# Set environment and expose port
+EXPOSE 8000
+ENV PORT=8000
+ENV ENV=production
+
 # Set the entrypoint
-CMD ["/app"]
+CMD ["/app/app"]
 
 
 
