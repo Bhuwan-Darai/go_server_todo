@@ -52,7 +52,7 @@
 
 FROM golang:1.20 as build
  
-WORKDIR /app
+WORKDIR /workspace
  
 # add go modules lockfiles
 COPY go.mod go.sum ./
@@ -70,11 +70,6 @@ RUN go run github.com/steebchen/prisma-client-go generate
  
 # build the binary with all dependencies
 RUN go build -o /app .
-
-# # Set environment and expose port
-EXPOSE 8000
-ENV PORT=8000
-ENV ENV=production
  
 CMD ["/app"]
 
