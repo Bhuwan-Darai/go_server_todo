@@ -95,7 +95,14 @@ COPY . .
 
 # Generate Prisma client
 RUN go run github.com/steebchen/prisma-client-go generate
-# or RUN go generate ./... if you've set up go:generate
+
+# Clean up unnecessary query engine files
+RUN cd prisma/db/prisma-client && \
+    rm -f query-engine-windows_gen.go query-engine-linux-static-x64_gen.go && \
+    if [ ! -f query-engine-debian-openssl-3.0.x_gen.go ]; then \
+        echo "❌ ERROR: Debian OpenSSL query engine not found!"; \
+        exit 1; \
+    fi
 
 # Build the app binary
 RUN go build -o /app .
