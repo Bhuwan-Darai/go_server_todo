@@ -86,47 +86,33 @@ RUN npm install -g prisma
 
 WORKDIR /app
 
-COPY prisma ./prisma/
-COPY schema.prisma ./
-
-# Generate Prisma query engine binaries for Alpine (linux-musl)
-RUN prisma generate
-
-# Stage 2: Go build with Prisma client
-FROM golang:1.20-alpine AS build
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apk add --no-cache git bash
-
-# Install Prisma Go generator
-RUN go install github.com/steebchen/prisma-client-go@latest
-
-# Copy Go modules and download
-COPY go.mod go.sum ./
+# Download Go modules
+COPY go.mod go.sum ./       # ✅ Make sure ./ ends with /
 RUN go mod download
 
-# Copy the rest of the code and Prisma schema
+# Install Prisma Go client generator
+RUN go install github.com/steebchen/prisma-client-go@latest
+
+# Copy all project files
 COPY . .
 
-# Copy generated Prisma artifacts from previous step
-COPY --from=prisma /app/prisma /app/prisma
-COPY --from=prisma /app/schema.prisma /app/schema.prisma
+# Optional: clean old generated Prisma Go client
+RUN rm -f ./prisma/db/prisma-client/*_gen.go
 
-# Regenerate the Go Prisma client
-RUN go run github.com/steebchen/prisma-client-go generate
+# Generate Prisma JS client (must be done before Go client-gen)
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
-# Build Go binary
+# Generate Prisma Go client
+RUN go generate ./prisma/db/prisma-client
+
+# Build Go app
 RUN go build -o app .
 
-# Stage 3: Final runtime
+# ---- Runtime image ----
 FROM alpine:latest
-
 RUN apk add --no-cache ca-certificates
 
 WORKDIR /root/
-
 COPY --from=build /app/app .
 
 EXPOSE 8000
@@ -134,6 +120,7 @@ ENV PORT=8000
 ENV ENV=production
 
 CMD ["./app"]
+
 
 
 
