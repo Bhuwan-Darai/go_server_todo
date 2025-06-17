@@ -54,22 +54,24 @@ FROM golang:1.24 AS build
 
 WORKDIR /workspace
 
-# Copy go.mod and go.sum first to cache dependencies
+# Copy Prisma schema and go.mod/go.sum to generate Prisma client first
+COPY prisma ./prisma
 COPY go.mod go.sum ./
-RUN go mod download
 
 # Install Prisma client dependencies
 RUN go run github.com/steebchen/prisma-client-go prefetch
 
-# Copy the entire project
-COPY . .
-
 # Generate Prisma client
 RUN go run github.com/steebchen/prisma-client-go generate
 
-# Verify Prisma client files
-RUN ls -l prisma/db/prisma-client/ && \
-    if [ ! -f prisma/db/prisma-client/query-engine-linux-static-x64_gen.go ]; then \
+# Download remaining dependencies
+RUN go mod download
+
+# Copy the entire project
+COPY . .
+
+# Verify platform-specific query engine
+RUN if [ ! -f prisma/db/prisma-client/query-engine-linux-static-x64_gen.go ]; then \
         echo "❌ ERROR: Linux static query engine not found!"; \
         exit 1; \
     fi
@@ -82,8 +84,8 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install CA certificates for HTTPS requests
-RUN apk add --no-cache ca-certificates
+# Install CA certificates and wget for health checks
+RUN apk add --no-cache ca-certificates wget
 
 # Copy the binary from the build stage
 COPY --from=build /app/app /app/app
@@ -94,14 +96,14 @@ COPY --from=build /workspace/prisma ./prisma
 # Ensure the binary is executable
 RUN chmod +x /app/app
 
-# Expose the port (Render uses PORT env var, defaulting to 8000)
+# Expose the port (Render uses PORT env var)
 EXPOSE 8000
 ENV PORT=8000
 ENV ENV=production
 
 # Add health check for Render
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-    CMD wget --spider http://localhost:${PORT}/health || exit 1
+    CMD wget --spider http://localhost:8000/health || exit 1
 
 # Set the entrypoint to the binary
 CMD ["/app/app"]

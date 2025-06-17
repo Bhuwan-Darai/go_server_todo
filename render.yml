@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: github.com/Bhuwan-Darai/goCrud
+    name: go-server-todo
     env: docker
     dockerfilePath: ./Dockerfile.render
     region: oregon
@@ -10,4 +10,6 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: PORT
-        value: 8080
+        value: 8000
+      - key: ENV
+        value: production
