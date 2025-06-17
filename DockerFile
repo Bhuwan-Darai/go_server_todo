@@ -78,29 +78,51 @@
  
 # CMD ["/app"]
 
-# Dockerfile.coolify
-FROM golang:1.24 as build
+# Stage 1: Build
+FROM node:20-alpine AS prisma
+
+# Install Prisma CLI
+RUN npm install -g prisma
 
 WORKDIR /app
 
+COPY prisma ./prisma/
+COPY schema.prisma ./
+
+# Generate Prisma query engine binaries for Alpine (linux-musl)
+RUN prisma generate
+
+# Stage 2: Go build with Prisma client
+FROM golang:1.20-alpine AS build
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache git bash
+
+# Install Prisma Go generator
+RUN go install github.com/steebchen/prisma-client-go@latest
+
+# Copy Go modules and download
 COPY go.mod go.sum ./
 RUN go mod download
 
-RUN go install github.com/steebchen/prisma-client-go@latest
-
+# Copy the rest of the code and Prisma schema
 COPY . .
 
-# Remove any previously generated prisma client files (optional cleanup)
-RUN rm -f ./prisma/db/prisma-client/*_gen.go
+# Copy generated Prisma artifacts from previous step
+COPY --from=prisma /app/prisma /app/prisma
+COPY --from=prisma /app/schema.prisma /app/schema.prisma
 
-# Generate Prisma Client Go (will include linux-musl binary)
-RUN go generate ./prisma/db/prisma-client
+# Regenerate the Go Prisma client
+RUN go run github.com/steebchen/prisma-client-go generate
 
+# Build Go binary
 RUN go build -o app .
 
+# Stage 3: Final runtime
 FROM alpine:latest
 
-# Install certificates (for HTTPS)
 RUN apk add --no-cache ca-certificates
 
 WORKDIR /root/
@@ -112,5 +134,6 @@ ENV PORT=8000
 ENV ENV=production
 
 CMD ["./app"]
+
 
 
