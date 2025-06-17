@@ -1,52 +1,70 @@
-# Stage 1: Build the Go application
-FROM golang:1.21-alpine as builder
+# Stage 1: Build stage
+FROM golang:1.24-alpine AS build
 
-WORKDIR /app
+WORKDIR /workspace
 
-# Install Git for Go modules
-RUN apk add --no-cache git
+# Install git for Go modules and Node.js/npm for Prisma CLI
+RUN apk add --no-cache git nodejs npm
 
-# Copy go dependencies and download them
+# Copy Prisma schema and go.mod/go.sum
+COPY prisma/schema.prisma ./prisma/
 COPY go.mod go.sum ./
+
+# Install Prisma CLI
+RUN npm install prisma --save-dev
+
+# Generate Prisma client with Prisma CLI
+RUN npx prisma generate --schema=./prisma/schema.prisma
+
+# Install Prisma client Go dependencies
+RUN go run github.com/steebchen/prisma-client-go prefetch
+
+# Generate Prisma client for Go
+RUN go run github.com/steebchen/prisma-client-go generate
+
+# Download remaining Go dependencies
 RUN go mod download
 
-# Copy source code
+# Copy the entire project
 COPY . .
 
-# Build the Go application binary
-RUN GOOS=linux GOARCH=amd64 go build -o main .
+# Verify platform-specific query engine
+RUN if [ ! -f prisma/db/prisma-client/query-engine-linux-static-x64_gen.go ]; then \
+    echo "❌ ERROR: Linux static query engine not found!"; \
+    exit 1; \
+    fi
 
-# Stage 2: Final runtime image
+# Build the binary with Render's flags for static linking
+RUN GOOS=linux GOARCH=amd64 go build -tags netgo -ldflags '-s -w' -o /app/app .
+
+# Stage 2: Minimal runtime image
 FROM alpine:latest
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates libc6-compat
+# Install CA certificates and wget for health checks
+RUN apk add --no-cache ca-certificates wget
 
-# Copy built Go binary
-COPY --from=builder /app/main .
+# Copy the binary from the build stage
+COPY --from=build /app/app /app/app
 
-# Copy Prisma client and query engine
-COPY prisma/db/prisma-client ./prisma/db/prisma-client
-COPY prisma/schema.prisma ./prisma/schema.prisma
+# Copy Prisma schema and migrations
+COPY --from=build /workspace/prisma ./prisma
 
-# Ensure query engine files are in place
-RUN cd ./prisma/db/prisma-client && \
-    if [ -f query-engine-linux-static-x64_gen.go ]; then \
-    echo "✅ Linux query engine found"; \
-    else \
-    echo "❌ ERROR: Linux query engine not found!"; \
-    exit 1; \
-    fi
+# Ensure the binary is executable
+RUN chmod +x /app/app
 
-# Set environment and expose port
+# Expose the port (Render uses PORT env var)
 EXPOSE 8000
 ENV PORT=8000
 ENV ENV=production
 
+# Add health check for Render
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+    CMD wget --spider http://localhost:8000/health || exit 1
+
 # Run the application
-CMD ["./main"]
+CMD ["/app/app"]
 
 
 
