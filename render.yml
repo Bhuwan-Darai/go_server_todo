@@ -2,6 +2,7 @@ services:
   - type: web
     name: github.com/Bhuwan-Darai/goCrud
     env: docker
+    dockerfilePath: ./Dockerfile.render
     region: oregon
     plan: free
     healthCheckPath: /health

@@ -1,0 +1,84 @@
+# # Stage 1: Build the Go application
+# FROM golang:1.21-alpine as builder
+
+# WORKDIR /app
+
+# # Install Git for Go modules
+# RUN apk add --no-cache git
+
+# # Copy go dependencies and download them
+# COPY go.mod go.sum ./
+# RUN go mod download
+
+# # Copy source code
+# COPY . .
+
+# # Build the Go application binary
+# RUN GOOS=linux GOARCH=amd64 go build -o main .
+
+# # Stage 2: Final runtime image
+# FROM alpine:latest
+
+# WORKDIR /app
+
+# # Install runtime dependencies
+# RUN apk add --no-cache ca-certificates libc6-compat
+
+# # Copy built Go binary
+# COPY --from=builder /app/main .
+
+# # Copy Prisma client and query engine
+# COPY prisma/db/prisma-client ./prisma/db/prisma-client
+# COPY prisma/schema.prisma ./prisma/schema.prisma
+
+# # Ensure query engine files are in place
+# RUN cd ./prisma/db/prisma-client && \
+#     if [ -f query-engine-linux-static-x64_gen.go ]; then \
+#         echo "✅ Linux query engine found"; \
+#     else \
+#         echo "❌ ERROR: Linux query engine not found!"; \
+#         exit 1; \
+#     fi
+
+# # Set environment and expose port
+# EXPOSE 8000
+# ENV PORT=8000
+# ENV ENV=production
+
+# # Run the application
+# CMD ["./main"]
+
+# second try 
+
+FROM golang:1.20 as build
+ 
+WORKDIR /app
+ 
+# add go modules lockfiles
+COPY go.mod go.sum ./
+RUN go mod download
+ 
+# prefetch the binaries, so that they will be cached and not downloaded on each change
+RUN go run github.com/steebchen/prisma-client-go prefetch
+ 
+COPY . ./
+ 
+# generate the Prisma Client Go client
+RUN go run github.com/steebchen/prisma-client-go generate
+# or, if you use go generate to run the generator, use the following line instead
+# RUN go generate ./...
+ 
+# build the binary with all dependencies
+RUN go build -o /app .
+
+# # Set environment and expose port
+EXPOSE 8000
+ENV PORT=8000
+ENV ENV=production
+ 
+CMD ["/app"]
+
+
+
+
+

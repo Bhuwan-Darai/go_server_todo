@@ -6,3 +6,4 @@ tmp/
 goCrud.exe
 .env
 .env.* 
+prisma/db/prisma-client/*_gen.go
