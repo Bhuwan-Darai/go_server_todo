@@ -50,24 +50,22 @@
 
 # second try 
 # Stage 1: Build stage
-FROM golang:1.24 AS build
+FROM golang:1.22 AS build
 
 WORKDIR /workspace
 
-# Copy Prisma schema and go.mod/go.sum to generate Prisma client first
-COPY prisma ./prisma
+# Copy go.mod and go.sum first to download dependencies
 COPY go.mod go.sum ./
-
-# Install Prisma client dependencies
-RUN go run github.com/steebchen/prisma-client-go prefetch
-
-# Generate Prisma client
-RUN go run github.com/steebchen/prisma-client-go generate
-
-# Download remaining dependencies
 RUN go mod download
 
-# Copy the entire project
+# Copy Prisma schema
+COPY prisma ./prisma
+
+# Install Prisma client dependencies and generate client
+RUN go run github.com/steebchen/prisma-client-go prefetch
+RUN go run github.com/steebchen/prisma-client-go generate
+
+# Copy the rest of the source code
 COPY . .
 
 # Verify platform-specific query engine
@@ -90,7 +88,7 @@ RUN apk add --no-cache ca-certificates wget
 # Copy the binary from the build stage
 COPY --from=build /app/app /app/app
 
-# Copy Prisma schema and migrations
+# Copy Prisma schema and generated client
 COPY --from=build /workspace/prisma ./prisma
 
 # Ensure the binary is executable
