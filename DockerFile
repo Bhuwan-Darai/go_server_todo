@@ -78,48 +78,49 @@
  
 # CMD ["/app"]
 
-# Stage 1: Build
-FROM node:20-alpine AS prisma
+# Stage 1: Build the Go app
+FROM golang:1.20 AS build
 
-# Install Prisma CLI
-RUN npm install -g prisma
+WORKDIR /workspace
+
+# Copy and download go modules
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Prefetch Prisma binary
+RUN go run github.com/steebchen/prisma-client-go prefetch
+
+# Copy the rest of the app
+COPY . .
+
+# Generate Prisma client
+RUN go run github.com/steebchen/prisma-client-go generate
+# Or use go generate ./... if preferred
+# RUN go generate ./...
+
+# Build the Go binary
+RUN go build -o /app .
+
+# Stage 2: Create a minimal runtime image
+FROM debian:bullseye-slim
 
 WORKDIR /app
 
-# Download Go modules
-COPY go.mod go.sum ./       # ✅ Make sure ./ ends with /
-RUN go mod download
+# Install required certificates for HTTPS
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Install Prisma Go client generator
-RUN go install github.com/steebchen/prisma-client-go@latest
+# Copy binary from builder
+COPY --from=build /app .
 
-# Copy all project files
-COPY . .
+# Set environment variables if needed (optional)
+# ENV PORT=8000
 
-# Optional: clean old generated Prisma Go client
-RUN rm -f ./prisma/db/prisma-client/*_gen.go
-
-# Generate Prisma JS client (must be done before Go client-gen)
-RUN npx prisma generate --schema=./prisma/schema.prisma
-
-# Generate Prisma Go client
-RUN go generate ./prisma/db/prisma-client
-
-# Build Go app
-RUN go build -o app .
-
-# ---- Runtime image ----
-FROM alpine:latest
-RUN apk add --no-cache ca-certificates
-
-WORKDIR /root/
-COPY --from=build /app/app .
-
+# Expose the port your app uses
 EXPOSE 8000
-ENV PORT=8000
-ENV ENV=production
 
+# Run the binary
 CMD ["./app"]
+
 
 
 
