@@ -105,7 +105,7 @@ RUN cd prisma/db/prisma-client && \
     fi
 
 # Build the app binary
-RUN go build -o /app .
+RUN go build -o /app/app .
 
 # Stage 2: Minimal runtime image
 FROM alpine:latest
@@ -116,13 +116,14 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 # Copy binary from builder stage
-COPY --from=build /app /app
+COPY --from=build /app/app /app
 
 # Copy prisma schema & migrations if needed
 COPY --from=build /workspace/prisma ./prisma
 
 # Set the entrypoint
 CMD ["/app"]
+
 
 
 
