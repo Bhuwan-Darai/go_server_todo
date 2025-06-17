@@ -6,15 +6,18 @@ WORKDIR /workspace
 # Install git for Go modules and Node.js/npm for Prisma CLI
 RUN apk add --no-cache git nodejs npm
 
-# Copy Prisma schema and go.mod/go.sum
-COPY prisma/schema.prisma ./prisma/
-COPY go.mod go.sum ./
+
 
 # Install Prisma CLI
 RUN npm install prisma --save-dev
 
 # Generate Prisma client with Prisma CLI
 RUN npx prisma generate --schema=./prisma/schema.prisma
+
+# Copy Prisma schema and go.mod/go.sum
+COPY prisma/schema.prisma ./prisma/
+COPY go.mod go.sum ./
+
 
 # Install Prisma client Go dependencies
 RUN go run github.com/steebchen/prisma-client-go prefetch
